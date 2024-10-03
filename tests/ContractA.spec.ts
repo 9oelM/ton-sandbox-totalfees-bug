@@ -1,5 +1,5 @@
 import { Blockchain, printTransactionFees, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, toNano } from '@ton/core';
+import { Cell, openContract, toNano } from '@ton/core';
 import { ContractA } from '../wrappers/ContractA';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
@@ -68,6 +68,7 @@ describe('ContractA', () => {
 
     it('should increase counter', async () => {
         const increaser = await blockchain.treasury('increaser');
+        const contractBTONBalanceBefore = await contractB.getBalance();
 
         const counterBefore = await contractA.getCounter();
 
@@ -105,6 +106,10 @@ describe('ContractA', () => {
             return acc + tx.totalFees.coins;
         }, 0n)
         
+        const contractBTONBalanceAfter = await contractB.getBalance();
+
+        console.log('contractB TON inflow', contractBTONBalanceAfter - contractBTONBalanceBefore);
+
         const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
         expect(lastTx.value).toBe(
             toNano('0.05') - allFees

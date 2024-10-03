@@ -63,4 +63,9 @@ export class ContractB implements Contract {
         const result = await provider.get('get_id', []);
         return result.stack.readNumber();
     }
+
+    async getBalance(provider: ContractProvider) {
+        const result = await provider.getState()
+        return result.balance;
+    }
 }
