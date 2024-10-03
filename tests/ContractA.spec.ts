@@ -96,7 +96,7 @@ describe('ContractA', () => {
         console.log('contractB TON inflow', contractBTONBalanceAfter - contractBTONBalanceBefore);
 
         const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
-        expect(lastTx.value).toBe(
+        expect(lastTx.value! - lastTx.totalFees!).toBe(
             toNano('0.05') - allFees
         );
     });
