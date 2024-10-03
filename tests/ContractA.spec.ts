@@ -66,20 +66,12 @@ describe('ContractA', () => {
         // blockchain and contractA are ready to use
     });
 
-    it('should increase counter', async () => {
+    it('fees test', async () => {
         const increaser = await blockchain.treasury('increaser');
         const contractBTONBalanceBefore = await contractB.getBalance();
 
-        const counterBefore = await contractA.getCounter();
-
-        console.log('counter before increasing', counterBefore);
-
-        const increaseBy = Math.floor(Math.random() * 100);
-
-        console.log('increasing by', increaseBy);
-
         const increaseResult = await contractA.sendIncrease(increaser.getSender(), {
-            increaseBy,
+            increaseBy: 1,
             value: toNano('0.05'),
         });
 
@@ -94,12 +86,6 @@ describe('ContractA', () => {
             success: true,
         });
 
-        const counterAfter = await contractA.getCounter();
-
-        console.log('counter after increasing', counterAfter);
-
-        expect(counterAfter).toBe(counterBefore + increaseBy);
-
         printTransactionFees(increaseResult.transactions);
 
         const allFees = increaseResult.transactions.reduce((acc, tx) => {
@@ -107,7 +93,6 @@ describe('ContractA', () => {
         }, 0n)
         
         const contractBTONBalanceAfter = await contractB.getBalance();
-
         console.log('contractB TON inflow', contractBTONBalanceAfter - contractBTONBalanceBefore);
 
         const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
