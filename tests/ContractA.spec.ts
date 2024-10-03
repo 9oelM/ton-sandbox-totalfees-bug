@@ -67,52 +67,47 @@ describe('ContractA', () => {
     });
 
     it('should increase counter', async () => {
-        const increaseTimes = 3;
-        for (let i = 0; i < increaseTimes; i++) {
-            console.log(`increase ${i + 1}/${increaseTimes}`);
+        const increaser = await blockchain.treasury('increaser');
 
-            const increaser = await blockchain.treasury('increaser' + i);
+        const counterBefore = await contractA.getCounter();
 
-            const counterBefore = await contractA.getCounter();
+        console.log('counter before increasing', counterBefore);
 
-            console.log('counter before increasing', counterBefore);
+        const increaseBy = Math.floor(Math.random() * 100);
 
-            const increaseBy = Math.floor(Math.random() * 100);
+        console.log('increasing by', increaseBy);
 
-            console.log('increasing by', increaseBy);
+        const increaseResult = await contractA.sendIncrease(increaser.getSender(), {
+            increaseBy,
+            value: toNano('0.05'),
+        });
 
-            const increaseResult = await contractA.sendIncrease(increaser.getSender(), {
-                increaseBy,
-                value: toNano('0.05'),
-            });
+        expect(increaseResult.transactions).toHaveTransaction({
+            from: increaser.address,
+            to: contractA.address,
+            success: true,
+        });
+        expect(increaseResult.transactions).toHaveTransaction({
+            from: contractA.address,
+            to: contractB.address,
+            success: true,
+        });
 
-            expect(increaseResult.transactions).toHaveTransaction({
-                from: increaser.address,
-                to: contractA.address,
-                success: true,
-            });
-            expect(increaseResult.transactions).toHaveTransaction({
-                from: contractA.address,
-                to: contractB.address,
-                success: true,
-            });
+        const counterAfter = await contractA.getCounter();
 
-            const counterAfter = await contractA.getCounter();
+        console.log('counter after increasing', counterAfter);
 
-            console.log('counter after increasing', counterAfter);
+        expect(counterAfter).toBe(counterBefore + increaseBy);
 
-            expect(counterAfter).toBe(counterBefore + increaseBy);
+        printTransactionFees(increaseResult.transactions);
 
-            printTransactionFees(increaseResult.transactions);
-
-            const allFees = increaseResult.transactions.reduce((acc, tx) => {
-                return acc + tx.totalFees.coins;
-            }, 0n)
-            
-            const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
-            expect(lastTx.value).toBe(
-                toNano('0.05') - allFees
-            );
-        }
+        const allFees = increaseResult.transactions.reduce((acc, tx) => {
+            return acc + tx.totalFees.coins;
+        }, 0n)
+        
+        const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
+        expect(lastTx.value).toBe(
+            toNano('0.05') - allFees
+        );
     });
 });
