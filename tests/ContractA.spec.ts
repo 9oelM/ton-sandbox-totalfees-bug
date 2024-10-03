@@ -4,6 +4,7 @@ import { ContractA } from '../wrappers/ContractA';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 import { ContractB } from '../wrappers/ContractB';
+import { flattenTransaction } from '@ton/test-utils';
 
 describe('ContractA', () => {
     let contractACode: Cell;
@@ -103,6 +104,15 @@ describe('ContractA', () => {
             expect(counterAfter).toBe(counterBefore + increaseBy);
 
             printTransactionFees(increaseResult.transactions);
+
+            const allFees = increaseResult.transactions.reduce((acc, tx) => {
+                return acc + tx.totalFees.coins;
+            }, 0n)
+            
+            const lastTx = flattenTransaction(increaseResult.transactions[increaseResult.transactions.length - 1]);
+            expect(lastTx.value).toBe(
+                toNano('0.05') - allFees
+            );
         }
     });
 });
